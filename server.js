@@ -27,6 +27,6 @@ mongoose
     console.log(err);
   });
 
-app.listen(9000 || process.env.PORT, () => {
+app.listen(process.env.PORT || 9000, () => {
   console.log("server is up on port 9000");
 });
