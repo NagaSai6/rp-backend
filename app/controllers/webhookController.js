@@ -1,12 +1,14 @@
 import dotenv from "dotenv";
 import request from "request";
+import User from "../models/user.js";
 import Conversation from "../models/conversations.js";
 import Message from "../models/message.js";
 dotenv.config();
 
-const handleMessage = (webhookevent) => {
+const handleMessage = async (webhookevent) => {
+  let user = await User.find({})
   let sender_psid = webhookevent.sender.id;
-  let receiver_psid = webhookevent.recipient.id;
+  let receiver_psid = user._id;
 
   let conversation = new Conversation({
     members: [sender_psid, receiver_psid],
@@ -15,20 +17,19 @@ const handleMessage = (webhookevent) => {
     if (err) {
       console.log(err);
     } else {
-       let message = new Message({
-         conversationId : convo._id,
-         senderId : sender_psid,
-         text : webhookevent.message.text
-       })
+      let message = new Message({
+        conversationId: convo._id,
+        senderId: sender_psid,
+        text: webhookevent.message.text,
+      });
 
-       message.save((err,msg)=>{
-         if(err){
-           console.log(err)
-         }else{
-           console.log('Success check DB')
-         }
-       })
-
+      message.save((err, msg) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Success check DB");
+        }
+      });
     }
   });
 };
@@ -88,6 +89,28 @@ const webhookController = () => {
         res.sendStatus(404);
       }
     },
+    async fetchConvos(req, res) {
+      let conversation = await Conversation.find({
+        members: { $in: [req.params.userId] },
+      });
+      res.status(200).json(conversation);
+    },
+    async createMessage(req, res) {
+      let message = new Message(req.body);
+      message.save((err, msg) => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.status(200).json(msg);
+        }
+      });
+    },
+    async getMessages(req,res){
+      let messages = await Message.find({
+        conversationId : req.params.conversationId
+      })
+      res.status(200).json(messages)
+    }
   };
 };
 
