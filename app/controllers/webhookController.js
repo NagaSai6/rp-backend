@@ -8,7 +8,7 @@ dotenv.config();
 const handleMessage = async (webhookevent) => {
   let user = await User.find({})
   let sender_psid = webhookevent.sender.id;
-  let receiver_psid = user._id;
+  let receiver_psid = user[0]._id;
 
   let conversation = new Conversation({
     members: [sender_psid, receiver_psid],
