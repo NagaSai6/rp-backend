@@ -1,10 +1,42 @@
-import dotenv from "dotenv"
+import dotenv from "dotenv";
+import request from "request";
+import Conversation from "../models/conversations.js";
+import Message from "../models/message.js";
 dotenv.config();
+
+const handleMessage = (webhookevent) => {
+  let sender_psid = webhookevent.sender.id;
+  let receiver_psid = webhookevent.recipient.id;
+
+  let conversation = new Conversation({
+    members: [sender_psid, receiver_psid],
+  });
+  conversation.save((err, convo) => {
+    if (err) {
+      console.log(err);
+    } else {
+       let message = new Message({
+         conversationId : convo._id,
+         senderId : sender_psid,
+         text : webhookevent.message.text
+       })
+
+       message.save((err,msg)=>{
+         if(err){
+           console.log(err)
+         }else{
+           console.log('Success check DB')
+         }
+       })
+
+    }
+  });
+};
 
 const webhookController = () => {
   return {
-    getWebhook(req,res) {
-        console.log(req.query)
+    getWebhook(req, res) {
+      console.log(req.query);
       let VERIFY_TOKEN = process.env.TOKEN;
 
       // Parse the query params
@@ -31,17 +63,23 @@ const webhookController = () => {
       // Checks this is an event from a page subscription
       if (body.object === "page") {
         // Iterates over each entry - there may be multiple if batched
-        body.entry.forEach(function(entry) {
+        body.entry.forEach(function (entry) {
+          // Gets the body of the webhook event
+          let webhook_event = entry.messaging[0];
+          console.log(webhook_event);
 
-            // Gets the body of the webhook event
-            let webhook_event = entry.messaging[0];
-            console.log(webhook_event);
-          
-            // Get the sender PSID
-            let sender_psid = webhook_event.sender.id;
-            console.log('Sender PSID: ' + sender_psid);
-          
-          });
+          // Get the sender PSID
+          let sender_psid = webhook_event.sender.id;
+          console.log("Sender PSID: " + sender_psid);
+
+          // Check if the event is a message or postback and
+          // pass the event to the appropriate handler function
+          if (webhook_event.message) {
+            handleMessage(webhook_event);
+          } else if (webhook_event.postback) {
+            console.log("Ignore");
+          }
+        });
 
         // Returns a '200 OK' response to all requests
         res.status(200).send("EVENT_RECEIVED");
