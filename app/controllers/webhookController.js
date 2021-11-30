@@ -11,14 +11,13 @@ const handleMessage = async (webhookevent) => {
   let sender_psid = webhookevent.sender.id;
   let receiver_psid = user[0]._id;
 
+
   let url = `https://graph.facebook.com/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${process.env.PAGETOKEN}`;
   try {
-    let response = await axios.get(url);
-    console.log(response.data)
+    var response = await axios.get(url);
   } catch (error) {
     console.log(error);
   }
-
 
 
 
@@ -38,6 +37,8 @@ const handleMessage = async (webhookevent) => {
       if (err) {
         console.log(err);
       } else {
+
+       
    
         let message = new Message({
           conversationId: convo._id,
