@@ -11,8 +11,9 @@ const handleMessage = async (webhookevent) => {
   let sender_psid = webhookevent.sender.id;
   let receiver_psid = user[0]._id;
 
-  let conversations = await Conversation.find({senderId:sender_psid}).exec();
-  if(conversations.length === 0){
+  let conversations = await Conversation.find({ senderId: sender_psid }).exec();
+  console.log(conversations);
+  if (conversations.length === 0) {
     let conversation = new Conversation({
       members: [sender_psid, receiver_psid],
     });
@@ -26,7 +27,7 @@ const handleMessage = async (webhookevent) => {
           sender: sender_psid,
           text: webhookevent.message.text,
         });
-  
+
         message.save((err, msg) => {
           if (err) {
             console.log(err);
@@ -36,7 +37,7 @@ const handleMessage = async (webhookevent) => {
         });
       }
     });
-  }else{
+  } else {
     let message = new Message({
       conversationId: convo._id,
       sender: sender_psid,
@@ -135,12 +136,11 @@ const webhookController = () => {
       console.log(customerId);
       let url = `https://graph.facebook.com/${customerId}?fields=first_name,last_name,profile_pic&access_token=${process.env.PAGETOKEN}`;
       try {
-        let data =await axios.get(url)
-        console.log("request comes from convo")
-        res.status(200).json(data.data)
-        
+        let data = await axios.get(url);
+        console.log("request comes from convo");
+        res.status(200).json(data.data);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     },
   };
