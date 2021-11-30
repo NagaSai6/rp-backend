@@ -19,7 +19,7 @@ const handleMessage = async (webhookevent) => {
     } else {
       let message = new Message({
         conversationId: convo._id,
-        senderId: sender_psid,
+        sender: sender_psid,
         text: webhookevent.message.text,
       });
 
