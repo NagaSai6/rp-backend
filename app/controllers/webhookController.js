@@ -16,7 +16,8 @@ const handleMessage = async (webhookevent) => {
   if(conversations.length === 0){
     let conversation = new Conversation({
       members: [sender_psid, receiver_psid],
-      senderId:sender_psid
+      senderId:sender_psid,
+      receipientId:webhookevent.recipient.id
     });
     conversation.save((err, convo) => {
       if (err) {
@@ -117,6 +118,11 @@ const webhookController = () => {
       res.status(200).json(conversation);
     },
     async createMessage(req, res) {
+
+
+
+
+
       let message = new Message(req.body);
       message.save((err, msg) => {
         if (err) {

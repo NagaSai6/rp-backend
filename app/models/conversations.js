@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 const ConversationSchema = new mongoose.Schema(
   {
     members: [{type:String}],
-    senderId:{type:String}
+    senderId:{type:String},
+    receipientId:{type:String}
   },
   { timestamps: true }
 );
