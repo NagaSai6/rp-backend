@@ -10,14 +10,22 @@ const handleMessage = async (webhookevent) => {
   let user = await User.find({});
   let sender_psid = webhookevent.sender.id;
   let receiver_psid = user[0]._id;
+  let url = `https://graph.facebook.com/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${process.env.PAGETOKEN}`;
+  try {
+    let data = await axios.get(url);
+    console.log("request comes from convo");
+    res.status(200).json(data.data);
+  } catch (error) {
+    console.log(error);
+  }
 
-  let conversations = await Conversation.find({senderId:sender_psid});
-   console.log(conversations);
-  if(conversations.length === 0){
+  let conversations = await Conversation.find({ senderId: sender_psid });
+  console.log(conversations);
+  if (conversations.length === 0) {
     let conversation = new Conversation({
       members: [sender_psid, receiver_psid],
-      senderId:sender_psid,
-      receipientId:webhookevent.recipient.id
+      senderId: sender_psid,
+      receipientId: webhookevent.recipient.id,
     });
     conversation.save((err, convo) => {
       if (err) {
@@ -27,8 +35,9 @@ const handleMessage = async (webhookevent) => {
           conversationId: convo._id,
           sender: sender_psid,
           text: webhookevent.message.text,
+          image: data.data.profile_pic
         });
-  
+
         message.save((err, msg) => {
           if (err) {
             console.log(err);
@@ -38,12 +47,13 @@ const handleMessage = async (webhookevent) => {
         });
       }
     });
-  }else{
+  } else {
     let id = conversations[0]._id;
     let message = new Message({
       conversationId: id,
       sender: sender_psid,
       text: webhookevent.message.text,
+      image: data.data.profile_pic
     });
 
     message.save((err, msg) => {
@@ -118,11 +128,23 @@ const webhookController = () => {
       res.status(200).json(conversation);
     },
     async createMessage(req, res) {
+      let requiredConvo = await Conversation.find({
+        _id: req.body.conversationId,
+      });
+      let receipientId = requiredConvo[0].senderId;
 
-
-
-
-
+      let request_body = {
+        recipient: {
+          id: receipientId,
+        },
+        message: {
+          text: req.body.text,
+        },
+      };
+      let response = await axios.post(
+        `https://graph.facebook.com/v12.0/me/messages?access_token=${process.env.PAGETOKEN}`,
+        request_body
+      );
       let message = new Message(req.body);
       message.save((err, msg) => {
         if (err) {
@@ -143,12 +165,11 @@ const webhookController = () => {
       console.log(customerId);
       let url = `https://graph.facebook.com/${customerId}?fields=first_name,last_name,profile_pic&access_token=${process.env.PAGETOKEN}`;
       try {
-        let data =await axios.get(url)
-        console.log("request comes from convo")
-        res.status(200).json(data.data)
-        
+        let data = await axios.get(url);
+        console.log("request comes from convo");
+        res.status(200).json(data.data);
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     },
   };
