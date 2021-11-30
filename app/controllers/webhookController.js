@@ -10,15 +10,24 @@ const handleMessage = async (webhookevent) => {
   let user = await User.find({});
   let sender_psid = webhookevent.sender.id;
   let receiver_psid = user[0]._id;
+
   let url = `https://graph.facebook.com/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${process.env.PAGETOKEN}`;
   try {
-    let data = await axios.get(url);
+    let response = await axios.get(url);
+    console.log(response.data)
   } catch (error) {
     console.log(error);
   }
 
+
+
+
   let conversations = await Conversation.find({ senderId: sender_psid });
   console.log(conversations);
+
+
+
+
   if (conversations.length === 0) {
     let conversation = new Conversation({
       members: [sender_psid, receiver_psid],
@@ -29,11 +38,12 @@ const handleMessage = async (webhookevent) => {
       if (err) {
         console.log(err);
       } else {
+   
         let message = new Message({
           conversationId: convo._id,
           sender: sender_psid,
           text: webhookevent.message.text,
-          image: data.data.profile_pic
+          image: response.data.profile_pic
         });
 
         message.save((err, msg) => {
@@ -51,7 +61,7 @@ const handleMessage = async (webhookevent) => {
       conversationId: id,
       sender: sender_psid,
       text: webhookevent.message.text,
-      image: data.data.profile_pic
+      image: response.data.profile_pic
     });
 
     message.save((err, msg) => {
