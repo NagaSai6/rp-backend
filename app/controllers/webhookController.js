@@ -3,35 +3,54 @@ import request from "request";
 import User from "../models/user.js";
 import Conversation from "../models/conversations.js";
 import Message from "../models/message.js";
+import axios from "axios";
 dotenv.config();
 
 const handleMessage = async (webhookevent) => {
-  let user = await User.find({})
+  let user = await User.find({});
   let sender_psid = webhookevent.sender.id;
   let receiver_psid = user[0]._id;
 
-  let conversation = new Conversation({
-    members: [sender_psid, receiver_psid],
-  });
-  conversation.save((err, convo) => {
-    if (err) {
-      console.log(err);
-    } else {
-      let message = new Message({
-        conversationId: convo._id,
-        sender: sender_psid,
-        text: webhookevent.message.text,
-      });
+  let conversations = await Conversation.find({senderId:sender_psid}).exec();
+  if(conversations.length === 0){
+    let conversation = new Conversation({
+      members: [sender_psid, receiver_psid],
+    });
+    conversation.save((err, convo) => {
+      if (err) {
+        console.log(err);
+      } else {
+        let convo_id = conversations[0]._id;
+        let message = new Message({
+          conversationId: convo_id,
+          sender: sender_psid,
+          text: webhookevent.message.text,
+        });
+  
+        message.save((err, msg) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("Success check DB");
+          }
+        });
+      }
+    });
+  }else{
+    let message = new Message({
+      conversationId: convo._id,
+      sender: sender_psid,
+      text: webhookevent.message.text,
+    });
 
-      message.save((err, msg) => {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("Success check DB");
-        }
-      });
-    }
-  });
+    message.save((err, msg) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Success check DB");
+      }
+    });
+  }
 };
 
 const webhookController = () => {
@@ -90,7 +109,6 @@ const webhookController = () => {
       }
     },
     async fetchConvos(req, res) {
-      console.log(req.params)
       let conversation = await Conversation.find({
         members: { $in: [req.params.userId] },
       });
@@ -106,12 +124,25 @@ const webhookController = () => {
         }
       });
     },
-    async getMessages(req,res){
+    async getMessages(req, res) {
       let messages = await Message.find({
-        conversationId : req.params.conversationId
-      })
-      res.status(200).json(messages)
-    }
+        conversationId: req.params.conversationId,
+      });
+      res.status(200).json(messages);
+    },
+    async getCustomerDetails(req, res) {
+      let customerId = req.params.customerId;
+      console.log(customerId);
+      let url = `https://graph.facebook.com/${customerId}?fields=first_name,last_name,profile_pic&access_token=${process.env.PAGETOKEN}`;
+      try {
+        let data =await axios.get(url)
+        console.log("request comes from convo")
+        res.status(200).json(data.data)
+        
+      } catch (error) {
+        console.log(error)
+      }
+    },
   };
 };
 

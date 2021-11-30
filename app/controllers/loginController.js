@@ -36,7 +36,7 @@ const loginController = () => {
                   { name: user.userName, mail: user.mail,image:req.body.picture.data.url,id:user._id },
                   process.env.SECRET,
                   {
-                    expiresIn: "2m",
+                    expiresIn: "7d",
                   }
                 );
                 const { name, email } = user;

@@ -8,7 +8,8 @@ const router = express.Router();
 
 router.get("/webhook",wc().getWebhook)
 router.get("/:userId",wc().fetchConvos)
-router.get("/:conversationId",wc().getMessages)
+router.get("/messages/:conversationId",wc().getMessages)
+router.get("/customers/:customerId",wc().getCustomerDetails);
 
 router.post("/login", lc().fblogin);
 router.post("/webhook",wc().postWebhook)
