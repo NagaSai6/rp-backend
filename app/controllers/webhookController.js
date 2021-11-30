@@ -13,8 +13,6 @@ const handleMessage = async (webhookevent) => {
   let url = `https://graph.facebook.com/${sender_psid}?fields=first_name,last_name,profile_pic&access_token=${process.env.PAGETOKEN}`;
   try {
     let data = await axios.get(url);
-    console.log("request comes from convo");
-    res.status(200).json(data.data);
   } catch (error) {
     console.log(error);
   }
