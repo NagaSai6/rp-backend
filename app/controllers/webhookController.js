@@ -90,6 +90,7 @@ const webhookController = () => {
       }
     },
     async fetchConvos(req, res) {
+      console.log(req.params)
       let conversation = await Conversation.find({
         members: { $in: [req.params.userId] },
       });

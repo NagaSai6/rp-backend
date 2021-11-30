@@ -10,7 +10,7 @@ const loginController = () => {
         } else {
           if (user) {
             let token = jwt.sign(
-              { name: user.userName, email: user.mail ,image:req.body.picture.data.url},
+              { name: user.userName, email: user.mail ,image:req.body.picture.data.url,id:user._id},
               process.env.SECRET,
               {
                 expiresIn: "7d",
@@ -33,7 +33,7 @@ const loginController = () => {
                 return res.status(200).json({ error: "Something went wrong" });
               } else {
                 let token = jwt.sign(
-                  { name: user.userName, mail: user.mail,image:req.body.picture.data.url,_id:user._id },
+                  { name: user.userName, mail: user.mail,image:req.body.picture.data.url,id:user._id },
                   process.env.SECRET,
                   {
                     expiresIn: "2m",
