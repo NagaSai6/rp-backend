@@ -11,10 +11,12 @@ const handleMessage = async (webhookevent) => {
   let sender_psid = webhookevent.sender.id;
   let receiver_psid = user[0]._id;
 
-  let conversations = await Conversation.find({senderId:sender_psid}).exec();
+  let conversations = await Conversation.find({senderId:sender_psid});
+   console.log(conversations);
   if(conversations.length === 0){
     let conversation = new Conversation({
       members: [sender_psid, receiver_psid],
+      senderId:sender_psid
     });
     conversation.save((err, convo) => {
       if (err) {
